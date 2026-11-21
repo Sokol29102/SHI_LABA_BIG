@@ -1,0 +1,12 @@
+{
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "batch_size": 128,
+  "training_step_seconds": 0.08069854999994278,
+  "training_images_per_second": 1586.1499370198196,
+  "estimated_training_epoch_seconds": 28.405889599979858,
+  "estimated_validation_seconds": 2.1225813333391366,
+  "peak_training_cuda_allocated_mib": 2293.51953125,
+  "peak_training_cuda_reserved_mib": 2442.0,
+  "pretrained_revision": "80e968688553f219e4a86f940ed945a23709c16f",
+  "scope": "Throwaway repeated training-only batch, synthetic labels, 3 warmup + 10 training steps. Strict FP32 eval timing is a repeated training-image batch, not test. Excludes loading, full dataset residency and checkpoint I/O."
+}

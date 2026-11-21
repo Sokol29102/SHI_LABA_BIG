@@ -1,0 +1,2 @@
+﻿model,test_accuracy,test_macro_f1,validation_accuracy,cv_macro_f1_mean,cv_macro_f1_std,final_refit_seconds,search_and_refit_seconds,peak_fit_tree_rss_mb,model_mb,end_to_end_ms_per_image
+HOG+RGB+LinearSVC,0.5745,0.5671615159020684,0.5796,0.562277632361849,0.0031010876300625718,133.07595038414001,996.2859567999985,7695.609375,0.17830371856689453,0.5406582031284302

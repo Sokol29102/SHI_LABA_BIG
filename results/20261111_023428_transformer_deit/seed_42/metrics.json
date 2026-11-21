@@ -1,0 +1,98 @@
+{
+  "test": {
+    "accuracy": 0.9716,
+    "precision_macro": 0.97166675466641,
+    "recall_macro": 0.9715999999999999,
+    "f1_macro": 0.9716092060556141,
+    "n_images": 10000,
+    "classification_report": {
+      "airplane": {
+        "precision": 0.9733201581027668,
+        "recall": 0.985,
+        "f1-score": 0.9791252485089463,
+        "support": 1000.0
+      },
+      "automobile": {
+        "precision": 0.9743336623889437,
+        "recall": 0.987,
+        "f1-score": 0.9806259314456036,
+        "support": 1000.0
+      },
+      "bird": {
+        "precision": 0.9817444219066938,
+        "recall": 0.968,
+        "f1-score": 0.9748237663645518,
+        "support": 1000.0
+      },
+      "cat": {
+        "precision": 0.937375745526839,
+        "recall": 0.943,
+        "f1-score": 0.9401794616151545,
+        "support": 1000.0
+      },
+      "deer": {
+        "precision": 0.9786585365853658,
+        "recall": 0.963,
+        "f1-score": 0.9707661290322581,
+        "support": 1000.0
+      },
+      "dog": {
+        "precision": 0.9423459244532804,
+        "recall": 0.948,
+        "f1-score": 0.9451645064805583,
+        "support": 1000.0
+      },
+      "frog": {
+        "precision": 0.9801587301587301,
+        "recall": 0.988,
+        "f1-score": 0.9840637450199203,
+        "support": 1000.0
+      },
+      "horse": {
+        "precision": 0.9808853118712274,
+        "recall": 0.975,
+        "f1-score": 0.9779338014042126,
+        "support": 1000.0
+      },
+      "ship": {
+        "precision": 0.9859719438877755,
+        "recall": 0.984,
+        "f1-score": 0.984984984984985,
+        "support": 1000.0
+      },
+      "truck": {
+        "precision": 0.9818731117824774,
+        "recall": 0.975,
+        "f1-score": 0.9784244856999498,
+        "support": 1000.0
+      },
+      "accuracy": 0.9716,
+      "macro avg": {
+        "precision": 0.97166675466641,
+        "recall": 0.9715999999999999,
+        "f1-score": 0.9716092060556141,
+        "support": 10000.0
+      },
+      "weighted avg": {
+        "precision": 0.9716667546664101,
+        "recall": 0.9716,
+        "f1-score": 0.9716092060556141,
+        "support": 10000.0
+      }
+    }
+  },
+  "best_epoch": 9,
+  "training_resources": {
+    "training_wall_seconds": 303.8359089000005,
+    "train_epoch_seconds_sum": 281.5101080000095,
+    "sampled_peak_process_tree_rss_mib": 2099.9375,
+    "peak_cuda_allocated_mib": 2440.8642578125,
+    "peak_cuda_reserved_mib": 2814.0,
+    "peak_measurement_complete": true,
+    "parameters_total": 5526346,
+    "parameters_trainable": 5526346,
+    "best_validation_f1": 0.9742156148817708,
+    "checkpoint_bytes": 22153231,
+    "scope": "Local fine-tuning incl validation/checkpoint I/O; excludes original ImageNet pretraining. Peak VRAM includes resident train images. Tree RSS sampled 100ms may overcount shared pages."
+  }
+}

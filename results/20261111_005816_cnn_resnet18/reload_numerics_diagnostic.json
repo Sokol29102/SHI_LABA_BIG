@@ -1,0 +1,48 @@
+[
+  {
+    "seed": 42,
+    "fast_reload_changed": 0,
+    "details": [],
+    "strict_vs_saved_changed": 1,
+    "saved_accuracy": 0.938,
+    "fast_reload_accuracy": 0.938,
+    "strict_accuracy": 0.9379
+  },
+  {
+    "seed": 123,
+    "fast_reload_changed": 1,
+    "details": [
+      {
+        "position": 3828,
+        "original_index": 3828,
+        "true": 1,
+        "saved_label": 9,
+        "fresh_label": 0,
+        "top_labels": [
+          0,
+          9,
+          1
+        ],
+        "top_logits": [
+          2.9445712566375732,
+          2.9443085193634033,
+          1.5389549732208252
+        ],
+        "top2_logit_margin": 0.0002627372741699219
+      }
+    ],
+    "strict_vs_saved_changed": 1,
+    "saved_accuracy": 0.9361,
+    "fast_reload_accuracy": 0.9361,
+    "strict_accuracy": 0.9361
+  },
+  {
+    "seed": 2026,
+    "fast_reload_changed": 0,
+    "details": [],
+    "strict_vs_saved_changed": 2,
+    "saved_accuracy": 0.9412,
+    "fast_reload_accuracy": 0.9412,
+    "strict_accuracy": 0.941
+  }
+]

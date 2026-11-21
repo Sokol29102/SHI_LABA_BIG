@@ -1,0 +1,79 @@
+{
+  "architecture": "deit_tiny_cifar_transfer_v1",
+  "model_name": "deit_tiny_patch16_224.fb_in1k",
+  "pretrained": {
+    "repository": "timm/deit_tiny_patch16_224.fb_in1k",
+    "revision": "80e968688553f219e4a86f940ed945a23709c16f",
+    "sha256": {
+      "model.safetensors": "21d4764d94f6c3ffdb6da3581115a0a1ee2d505537d96883b540e54766407c9e",
+      "config.json": "3d72ac86d758a666cea39866088e4d7714aa00467307eaa5f64bb1c5de90ba5a",
+      "README.md": "2f0b64ed891977f4157922e1504ad4826c82552ff30728abbeb2555458d036e7"
+    },
+    "license": "apache-2.0 (published model card)",
+    "pretraining_dataset": "ImageNet-1K",
+    "source": "https://huggingface.co/timm/deit_tiny_patch16_224.fb_in1k",
+    "accessed": "2026-11-11"
+  },
+  "epochs": 10,
+  "batch_size": 128,
+  "seeds": [
+    42,
+    123,
+    2026
+  ],
+  "optimizer": "AdamW",
+  "backbone_lr": 5e-05,
+  "head_lr": 0.0005,
+  "weight_decay": 0.05,
+  "scheduler": "one-epoch linear warmup from 0.1x, then cosine, stepped each batch",
+  "gradient_clip_norm": 1.0,
+  "training_precision": "BF16 autocast, FP32 weights",
+  "evaluation_precision": "strict FP32, TF32 disabled, deterministic algorithms and cuDNN; no augmentation",
+  "cublas_workspace_config": ":4096:8",
+  "checkpoint_selection": "earliest maximum validation macro-F1",
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "normalization_source": "published pretrained ImageNet model constants; no fit on target test",
+  "preprocessing": "Per-image reflect-padded crop/flip at 32x32 for train only, bicubic direct resize to224 and clamp[0,1], then ImageNet normalization. No center crop. No details added by upsampling.",
+  "classes": [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+  ],
+  "dataset_sha256": "121341808cccdf73ba0ef2ddb9ee520d4aa5768405ac6284e5d5b0cff46ca2e4",
+  "split_sha256": "216ad3cdfb623529184af4f0b4a75f61aba083f36385cd878c506981eb152259",
+  "sizes": {
+    "train": 45000,
+    "validation": 5000,
+    "test": 10000
+  },
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "gpu_memory_bytes": 17102864384,
+  "cuda_runtime": "12.8",
+  "cudnn": 91900,
+  "python": "3.10.16 | packaged by Anaconda, Inc. | (main, Dec 11 2024, 16:19:12) [MSC v.1929 64 bit (AMD64)]",
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "timm": "1.0.31",
+    "huggingface-hub": "2.4.0",
+    "safetensors": "0.8.0",
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2"
+  }
+}

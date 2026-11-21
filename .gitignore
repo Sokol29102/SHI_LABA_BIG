@@ -1,0 +1,15 @@
+/.venv/
+/.hf_cache/
+/.chart-data-*/
+/build/
+/data/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.pt
+*.joblib
+*.safetensors
+*.log
+/sources/*.pdf
+/sources/*.txt

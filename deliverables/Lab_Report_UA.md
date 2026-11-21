@@ -1,0 +1,244 @@
+# Порівняння ML, CNN і vision transformer на CIFAR-10
+
+Лабораторна робота. 11 листопада 2026 року.
+
+
+## 1. Постановка задачі та дані
+
+Лабораторна робота: експериментальне порівняння класичного ML, CNN та vision transformer. Вхід X - RGB-зображення; ціль y - один із десяти класів CIFAR-10. Мета - виміряти не лише якість, а й локальну ціну її отримання: час, RAM/VRAM, розмір моделі та inference.
+
+Найвища середня test accuracy у цьому експерименті: 97,14%. Усі наведені результати отримано фактичним запуском; джерела та checkpoint збережено. Порівняння охоплює різні процедури навчання, включно з попередньо навченим ImageNet backbone.
+
+
+### CIFAR-10
+
+Повний офіційний набір: 60 000 зображень 32x32, 10 збалансованих класів. Офіційні 50 000 train поділено на 45 000 train та 5 000 validation; офіційні 10 000 test залишено для фінальної оцінки. В усіх моделях індекси split однакові, seed розбиття 42.
+
+| Частина | Об’єктів | Об’єктів на клас |
+| --- | --- | --- |
+| Train | 45 000 | 4 500 |
+| Validation | 5 000 | 500 |
+| Test | 10 000 | 1 000 |
+
+![Рис. 1. Перший training-приклад кожного класу; показано справжню низьку роздільність даних.](assets/dataset_examples.png)
+
+Рис. 1. Перший training-приклад кожного класу; показано справжню низьку роздільність даних.
+
+Архів перевірено за офіційним MD5 c58f30108f718f92721af3b95e74349a. Exact SHA-256 audit не виявив дублікатів, перетину split чи конфліктів міток. Близькі сцени/crops не усуваються цим тестом. На офіційній сторінці не встановлено явної ліцензії dataset; джерело процитовано, дані не включаються до пакета для поширення [7].
+
+
+## 2. Огляд сучасних досліджень
+
+Відібрано чотири первинні роботи 2024-2025 років. Вони дають контекст якості та ефективності, але не утворюють прямо зіставний leaderboard: відрізняються dataset, split, hardware, pretraining та training recipe.
+
+
+### [1] Wu, 2025: small ViT на CIFAR-10
+
+Препринт Powerful Design of Small Vision Transformer on CIFAR10 досліджує аугментації, low-rank attention і кілька CLS tokens. Навчання: 100 епох, batch 256, RTX 3090. Автор подає baseline Val/Acc 93,65% і 93,95% для варіанта з двома CLS tokens. Окремий незалежний validation split з опису не встановлено; ці числа не прирівнюємо до нашого test. Корисний висновок - важливість augmentation і розміру представлення.
+
+
+### [2] SHViT, CVPR 2024
+
+Yun і Ro оптимізують memory access та single-head attention. SHViT-S4 на ImageNet-1K: 79,4% top-1 при 256x256, 16,5 млн параметрів, 14 283 зображень/с на A100, batch 256; 300 епох з нуля. Інші distillation-рецепти мають окремі результати. Для лабораторної беремо потребу вимірювати RAM/VRAM і реальний throughput, а не лише параметри.
+
+
+### [3] MobileNetV4, ECCV 2024
+
+Qin та співавтори порівнюють CNN/hybrid архітектури на мобільних платформах. На ImageNet-1K MNv4-Conv-S має 73,8% top-1, 3,8 млн параметрів та 2,4 ms на Pixel 6 CPU. Для Hybrid-L стандартний результат 83,4%; 87,0% використовує додаткове pretraining/distillation. Це обґрунтовує явне зазначення пристрою та prior training у нашому порівнянні.
+
+
+### [4] TinyNeXt, ICCV 2025
+
+Zeng та співавтори поєднують CNN і Lean Single-Head Self-Attention. TinyNeXt-T: 71,5% top-1 на ImageNet-1K, 1,0 млн параметрів, 7257 зображень/с на RTX 3090, inference batch 512. Навчання з нуля: 224x224, 300 епох, 8 RTX 3090. Малий розмір моделі не гарантує однакового latency на різному hardware.
+
+Історичні ResNet [5] та DeiT [6] - окремі архітектурні першоджерела, а не заміна цього сучасного огляду. Повні PDF, BibTeX і SHA-256 manifest збережено у sources/.
+
+
+## 3. Методологія та ресурси
+
+Train використовується для fit параметрів, scaler і навчання нейромереж. Validation - для вибору checkpoint. Test не бере участі в підборі C, аугментацій, epoch budget чи seed. У нейромереж усі три вибори checkpoint зафіксовано до відкриття test-міток.
+
+| Аспект | Протокол |
+| --- | --- |
+| Classical ML | 3-fold StratifiedKFold тільки всередині train; C та HOG/RGB обрано за CV macro-F1; scaler fit окремо в кожному fold. |
+| Нейромережі | Фіксований validation; seeds 42, 123, 2026 замість повної CV через обчислювальну ціну. Test оцінюється для кожного зафіксованого checkpoint. |
+| Агрегування | Середнє та population std по трьох neural seeds. Це не CV fold std та не confidence interval. SVM test std не оцінено. |
+| Основні метрики | Accuracy, macro Precision/Recall/F1, per-class metrics, confusion matrices. Найкращу епоху визначає validation macro-F1; ties - найраніша епоха. |
+| Hardware | Локальний RTX 5060 Ti 16 GiB, близько 31,7 GiB RAM, 16 logical CPU. SVM використовує CPU; neural training - CUDA GPU. |
+| Вимірювання | CUDA синхронізується на межах таймінгу. GPU memory - torch allocated/reserved peak; RAM - process-tree RSS кожні 100 ms. Shared pages можуть рахуватися двічі. |
+
+
+### Єдиний inference benchmark
+
+Перші 512 тих самих test-зображень, прогрів та п’ять повторів. Відображається median ms/image для batch throughput, а не latency окремого запиту. Включено HOG або resize/normalization, transfer на GPU для neural моделей, forward, argmax та повернення міток. Читання файлів виключено. Обидві neural моделі тут працюють у strict FP32 з TF32 off; SVM - CPU, один native thread.
+
+CNN quality збережено з первісного FP32/TF32-allowed запуску; DeiT quality оцінено у strict FP32. Ця числова відмінність і різні precision/hardware режими зазначаються, а не маскуються. Це практичне порівняння процедур, не контрольований експеримент лише над attention.
+
+
+## 4. Архітектури та навчання
+
+
+### 4.1. HOG + RGB + Linear SVM
+
+З кожного зображення отримано 1764 HOG ознаки (9 орієнтацій, cell 4x4, block 2x2, L2-Hys) та 96 RGB bins. StandardScaler входить у sklearn pipeline. Порівняно HOG і HOG+RGB та C = 0.0001, 0.001, 0.01: 18 CV fits і один refit. Обрано HOG+RGB та C=0.001. Фінальний fit - лише на спільному train, validation збережено.
+
+Найкращий CV macro-F1: 0,5623 ± 0,0031; коефіцієнтів та intercepts SVM: 18,610. Цей count не включає сам алгоритм HOG та fitted scaler.
+
+
+### 4.2. ResNet-18 з нуля
+
+Torchvision ResNet-18: stem 3x3 stride 1 замість 7x7 stride 2; maxpool прибрано; вихід 10 класів. Немає pretrained weights. RGB mean/std обчислено лише на train. Train augmentation: випадковий reflect-padded crop з padding 4 і horizontal flip 0.5. 60 епох, batch 256, SGD Nesterov, LR 0.1, momentum 0.9, weight decay 5e-4, cosine decay. BF16 autocast training, FP32 weights; evaluation FP32 з дозволеним TF32.
+
+
+### 4.3. DeiT-Tiny з ImageNet pretraining
+
+Повний pretrained backbone deit_tiny_patch16_224.fb_in1k завантажено з незмінної Hugging Face revision. Лише head замінено на 10 класів; усі параметри fine-tune. CIFAR augmentation виконується на 32x32, потім bicubic resize до 224x224 та published ImageNet normalization (mean 0.485/0.456/0.406, std 0.229/0.224/0.225). Upsampling не додає деталей.
+
+10 епох, batch 128, AdamW: backbone LR 5e-5, head LR 5e-4, weight decay 0.05; один epoch warmup, потім cosine; clip norm 1.0. BF16 training, strict FP32 evaluation. Локально не вимірювалася і не включена початкова вартість ImageNet pretraining. Кількість параметрів: 5,526,346 проти 11,173,962 у CNN.
+
+
+## 5. Результати якості
+
+| Модель | Test accuracy | Test macro-F1 |
+| --- | --- | --- |
+| HOG + SVM | 57,45% | 0,5672 |
+| ResNet-18 | 93,84% ± 0,21 п.п. | 0,9385 ± 0,0022 |
+| DeiT-Tiny | 97,14% ± 0,07 п.п. | 0,9714 ± 0,0007 |
+
+У нейромереж наведено середнє ± std по трьох незалежних training seeds. SVM має один фінальний test-результат; його CV std не перенесено на test. Це різні оцінки нестабільності.
+
+![Рис. 2. Accuracy на тому самому test. Error bars нейромереж - std по seeds, не confidence intervals.](assets/test_accuracy.png)
+
+Рис. 2. Accuracy на тому самому test. Error bars нейромереж - std по seeds, не confidence intervals.
+
+| Модель / seed | Вибрана епоха | Accuracy, % | Macro-F1 |
+| --- | --- | --- | --- |
+| ResNet / 42 | 60 | 93,80 | 0,9381 |
+| ResNet / 123 | 59 | 93,61 | 0,9360 |
+| ResNet / 2026 | 58 | 94,12 | 0,9413 |
+| DeiT / 42 | 9 | 97,16 | 0,9716 |
+| DeiT / 123 | 10 | 97,22 | 0,9722 |
+| DeiT / 2026 | 9 | 97,05 | 0,9705 |
+
+Epoch selection перевірено за історіями: checkpoint відповідає найранішому максимуму validation macro-F1. Усі три selections у кожному neural експерименті зафіксовано до test. Жоден seed не обрано як найкращий за test.
+
+
+## 6. Якість проти обчислювальної ціни
+
+| Модель | Fit / seed, хв | Усі запуски, хв | Модель, MiB | Inference, ms/зобр. |
+| --- | --- | --- | --- | --- |
+| HOG + SVM | 2,22 | 16,60 | 0,18 | 0,489 |
+| ResNet-18 | 6,88 | 20,65 | 42,70 | 0,231 |
+| DeiT-Tiny | 5,05 | 15,16 | 21,13 | 0,425 |
+
+Fit SVM - тільки фінальний refit; усі запуски SVM включають 18 CV fits і refit. Neural fit/seed включає validation і checkpoint I/O; усі запуски - сума трьох seeds. Для DeiT не включено початкове ImageNet pretraining. Це локальна ціна адаптації, не повна ціна створення representation.
+
+| Модель | Peak RAM, GiB | Peak GPU allocated, GiB | Параметри / coefficients |
+| --- | --- | --- | --- |
+| HOG + SVM | 7,52 | - | 18 610 |
+| ResNet-18 | 2,17 | 2,47 | 11 173 962 |
+| DeiT-Tiny | 2,07 | 2,38 | 5 526 346 |
+
+RAM SVM охоплює CV worker processes і може двічі рахувати shared pages. GPU peaks нейромереж включають resident images та startup/autotuning; у таблиці максимум по seeds, а не середнє. Параметри SVM - coefficients/intercepts, без HOG-коду і scaler. Серіалізовані розміри є фактичними checkpoint sizes.
+
+![Рис. 3. Єдиний batch-512 benchmark; обидві neural моделі strict FP32 на GPU, SVM на CPU. ms/image не є single-request latency.](assets/inference_latency.png)
+
+Рис. 3. Єдиний batch-512 benchmark; обидві neural моделі strict FP32 на GPU, SVM на CPU. ms/image не є single-request latency.
+
+DeiT відносно CNN: 3,30 п.п. accuracy; відносно SVM: 39,69 п.п. У цьому запуску DeiT inference займає приблизно 1,8x часу CNN. Не можна приписати різницю лише attention: є ImageNet prior training, 224x224 проти 32x32 та різні optimizer/epoch budgets.
+
+
+## 7. Аналіз помилок
+
+![Рис. 4. SVM per-class F1; для neural моделей - середнє per-class F1 по трьох seeds. Це не ensemble.](assets/per_class_f1.png)
+
+Рис. 4. SVM per-class F1; для neural моделей - середнє per-class F1 по трьох seeds. Це не ensemble.
+
+| Модель | Найчастіша off-diagonal помилка | Кількість |
+| --- | --- | --- |
+| HOG + SVM | cat -> dog | 172 |
+| ResNet-18 | cat -> dog | 70 |
+| DeiT-Tiny | dog -> cat | 41 |
+
+Confusion table та матриці у додатках використовують наперед обраний seed 42 для neural моделей. Кожен істинний клас має 1000 test-прикладів, тому counts можна інтерпретувати в межах цього support. Найбільші off-diagonal клітинки знайдено після фіксації моделей і не використано для донавчання.
+
+HOG і глобальні кольорові гістограми описують форму/текстуру, але слабше відділяють семантично схожі об’єкти. CNN навчає локальні ознаки, а DeiT використовує попередньо навчене представлення. Це узгоджується з per-class результатами, але не ізолює причинний внесок окремих компонентів.
+
+Частина помилок пов’язана з неоднозначними tiny-зображеннями, малим об’єктом, фоном і схожими класами. На 32x32 важливі деталі можуть бути втрачені ще у вихідних даних; resize до 224x224 не відновлює їх. Випадкові приклади помилок і повні predictions CSV збережено у result folders.
+
+
+## 8. Висновки, обмеження та відтворення
+
+Найвища середня test accuracy серед перевірених процедур - DeiT-Tiny. Вибір для використання залежить від вимог: SVM є компактним CPU baseline; CNN дає високу якість та коротший measured GPU inference; transformer перевіряє, чи виправдовує ImageNet transfer додатковий inference cost. Значення для цього рішення наведено у таблицях, а не виведено лише з типу архітектури.
+
+
+### Обмеження
+
+1. Різні prior training, resolutions і learning budgets не дозволяють зробити чистий висновок «attention кращий за convolutions». Вартість ImageNet pretraining невідома в цьому експерименті.
+
+2. SVM використовує CPU, нейромережі GPU; це не вимірювання speedup одного алгоритму. Пам’ять RAM та VRAM - окремі величини; sampling RSS має обмеження. Енергія і грошова вартість не вимірювалися.
+
+3. Лише три neural seeds, один dataset, контрольована 10-class closed-set задача. Огляд джерел обмежений чотирма сучасними роботами; exact hashes не виявляють near-duplicates або можливий overlap із pretraining corpus.
+
+4. У первісному CNN GPU reload 29 999 із 30 000 labels збіглися точно, одна top-2 near-tie змінилася; accuracy не змінилася. Original metrics і weights збережено. Повний numerical audit описує tolerance <=0.001 logits. Transformer перевірено окремо з strict FP32; точний reload підтверджено на тому самому GPU/software.
+
+
+### Відтворення та збережені матеріали
+
+Робоча папка: E:/labs/SHI_LABA_BIG. Скрипти: prepare_data.py, train_baseline.py, train_cnn.py, train_transformer.py. Залежності кожного етапу зафіксовані у requirements-*-lock.txt; базовий SVM lock також збережено.
+
+Результати: results/latest_classical.txt, latest_cnn.txt, latest_transformer.txt. Там є config, split/model hashes, histories, best/last checkpoint, predictions, per-class metrics, timing і memory. Перевірка: verify_results.py, verify_cnn.py, verify_transformer.py; unit/regression checks: python -m unittest discover -v.
+
+Навчання/аналіз не потребують notebook. PDF цього звіту, редагований Markdown, CSV порівняння та шість слайдів зі speaker notes є окремими deliverables. Джерела PDF і BibTeX залишаються у sources/.
+
+
+## 9. Джерела
+
+Перші чотири роботи - сучасний related work; ResNet і DeiT - додаткові архітектурні джерела. Числа авторів у розділі 2 не змішуються з власними результатами у розділах 5-7.
+
+[1] Gent Wu. Powerful Design of Small Vision Transformer on CIFAR10. arXiv preprint, 2025; 2501.06220v1. [Першоджерело](https://arxiv.org/abs/2501.06220)
+
+[2] Seokju Yun, Youngmin Ro. SHViT: Single-Head Vision Transformer with Memory Efficient Macro Design. CVPR 2024; arXiv 2401.16456v2. [Першоджерело](https://arxiv.org/abs/2401.16456)
+
+[3] Danfeng Qin et al. MobileNetV4: Universal Models for the Mobile Ecosystem. ECCV 2024; arXiv 2404.10518v2. [Першоджерело](https://arxiv.org/abs/2404.10518)
+
+[4] Fanhong Zeng et al. An Efficient Hybrid Vision Transformer for TinyML Applications. ICCV 2025 (TinyNeXt). [Першоджерело](https://www.openaccess.thecvf.com/content/ICCV2025/papers/Zeng_An_Efficient_Hybrid_Vision_Transformer_for_TinyML_Applications_ICCV_2025_paper.pdf)
+
+[5] Kaiming He et al. Deep Residual Learning for Image Recognition. CVPR 2016; arXiv 1512.03385. [Першоджерело](https://arxiv.org/abs/1512.03385)
+
+[6] Hugo Touvron et al. Training data-efficient image transformers and distillation through attention. ICML 2021; arXiv 2012.12877. [Першоджерело](https://arxiv.org/abs/2012.12877)
+
+[7] Alex Krizhevsky. Learning Multiple Layers of Features from Tiny Images, 2009. Офіційна CIFAR-10 download page та checksum. [Першоджерело](https://www.cs.toronto.edu/~kriz/cifar.html)
+
+[8] Official timm pretrained model card: deit_tiny_patch16_224.fb_in1k. ImageNet-1K, Apache-2.0; локально pinned revision і SHA-256. [Першоджерело](https://huggingface.co/timm/deit_tiny_patch16_224.fb_in1k)
+
+[9] PyTorch 2.11 numerical accuracy documentation: floating-point reproducibility і TF32. [Першоджерело](https://docs.pytorch.org/docs/2.11/notes/numerical_accuracy.html)
+
+У sources/ збережено шість research PDF, RELATED_WORK_UA.md, references.bib та manifest.json з URL, датами, версіями, розмірами, кількістю сторінок і SHA-256. Upstream weights/config/model card і окрема provenance - у data/pretrained/deit_tiny/. Усі власні таблиці та графіки побудовано із зафіксованих experiment artifacts.
+
+
+## Додаток. Confusion matrix: HOG + SVM
+
+![Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.](assets/confusion_svm.png)
+
+Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.
+
+Рядки - істинні класи, стовпці - прогноз. Кожен клас має support 1000. Значення округлено до двох знаків; сума округлених клітинок може трохи відрізнятися від 1. Повні integer counts можна відновити з test_predictions.csv.
+
+
+## Додаток. Confusion matrix: ResNet-18
+
+![Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.](assets/confusion_cnn.png)
+
+Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.
+
+Рядки - істинні класи, стовпці - прогноз. Кожен клас має support 1000. Значення округлено до двох знаків; сума округлених клітинок може трохи відрізнятися від 1. Повні integer counts можна відновити з test_predictions.csv.
+
+
+## Додаток. Confusion matrix: DeiT-Tiny
+
+![Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.](assets/confusion_vit.png)
+
+Нормування за істинним класом, однакові 10 000 test-прикладів. Для neural моделей використано наперед обраний seed 42.
+
+Рядки - істинні класи, стовпці - прогноз. Кожен клас має support 1000. Значення округлено до двох знаків; сума округлених клітинок може трохи відрізнятися від 1. Повні integer counts можна відновити з test_predictions.csv.

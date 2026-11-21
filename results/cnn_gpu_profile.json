@@ -1,0 +1,23 @@
+{
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "batch_size": 256,
+  "measured_steps": 12,
+  "warmup_steps": 4,
+  "training_images_per_second": 7479.387858824805,
+  "seconds_per_step": 0.03422740000011496,
+  "estimated_train_epoch_seconds": 6.024022400020233,
+  "peak_cuda_allocated_mib": 709.77734375,
+  "peak_cuda_reserved_mib": 826.0,
+  "precision": "BF16 autocast, FP32 weights",
+  "note": "Throwaway training-only timing profile; repeated batch and synthetic targets; excludes validation, checkpoint I/O, startup and full resident dataset. Not a quality experiment.",
+  "mean": [
+    0.4911373512391725,
+    0.4821111870234561,
+    0.4464489876090037
+  ],
+  "std": [
+    0.24686913619550443,
+    0.2434301261263106,
+    0.2616033939153383
+  ]
+}

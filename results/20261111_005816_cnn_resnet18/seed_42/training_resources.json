@@ -1,0 +1,12 @@
+{
+  "training_wall_seconds": 427.2305688000015,
+  "train_epoch_seconds_sum": 385.2244604999869,
+  "sampled_peak_process_tree_rss_mib": 2179.21484375,
+  "peak_cuda_allocated_mib": 2533.19873046875,
+  "peak_cuda_reserved_mib": 2632.0,
+  "parameters_total": 11173962,
+  "parameters_trainable": 11173962,
+  "best_validation_f1": 0.9428108476557047,
+  "checkpoint_bytes": 44776523,
+  "note": "Training wall includes validation and checkpoint I/O. VRAM includes resident official-train images; RAM is sampled tree RSS and may overcount shared pages."
+}

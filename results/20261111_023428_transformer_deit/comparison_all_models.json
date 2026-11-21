@@ -1,0 +1,53 @@
+[
+  {
+    "model": "HOG+RGB+LinearSVC",
+    "device": "CPU",
+    "prior_training": "none",
+    "input_resolution": 32,
+    "test_accuracy": 0.5745,
+    "test_accuracy_seed_std": null,
+    "test_macro_f1": 0.5671615159020684,
+    "test_macro_f1_seed_std": null,
+    "local_train_seconds_per_fit": 133.07595038414001,
+    "total_experiment_training_seconds": 996.2859567999985,
+    "parameters_or_svm_coefficients": 18610,
+    "checkpoint_bytes": 186965,
+    "peak_training_ram_mib": 7695.609375,
+    "peak_cuda_allocated_mib": 0.0,
+    "matched_inference_ms_per_image": 0.48886933593905724
+  },
+  {
+    "model": "ResNet18_CIFAR",
+    "device": "RTX 5060 Ti GPU",
+    "prior_training": "none",
+    "input_resolution": 32,
+    "test_accuracy": 0.9384333333333332,
+    "test_accuracy_seed_std": 0.00210449254902195,
+    "test_macro_f1": 0.9384718591769348,
+    "test_macro_f1_seed_std": 0.0021709452078590417,
+    "local_train_seconds_per_fit": 413.09736696666613,
+    "total_experiment_training_seconds": 1239.2921008999983,
+    "parameters_or_svm_coefficients": 11173962,
+    "checkpoint_bytes": 44776523,
+    "peak_training_ram_mib": 2225.484375,
+    "peak_cuda_allocated_mib": 2533.19873046875,
+    "matched_inference_ms_per_image": 0.23112363281541093
+  },
+  {
+    "model": "DeiT_Tiny_finetuned",
+    "device": "RTX 5060 Ti GPU",
+    "prior_training": "ImageNet-1K, cost excluded",
+    "input_resolution": 224,
+    "test_accuracy": 0.9714333333333333,
+    "test_accuracy_seed_std": 0.0007039570693980673,
+    "test_macro_f1": 0.9714314033320447,
+    "test_macro_f1_seed_std": 0.00070621360231431,
+    "local_train_seconds_per_fit": 303.2490428333331,
+    "total_experiment_training_seconds": 909.7471284999992,
+    "parameters_or_svm_coefficients": 5526346,
+    "checkpoint_bytes": 22153231,
+    "peak_training_ram_mib": 2122.26171875,
+    "peak_cuda_allocated_mib": 2440.8642578125,
+    "matched_inference_ms_per_image": 0.4248761718770311
+  }
+]

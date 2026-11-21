@@ -1,0 +1,72 @@
+{
+  "model": "HOG + optional RGB histogram + StandardScaler + LinearSVC",
+  "seed": 42,
+  "cv_folds": 3,
+  "C_grid": [
+    0.0001,
+    0.001,
+    0.01
+  ],
+  "feature_variants": [
+    "HOG",
+    "HOG+RGB"
+  ],
+  "selection_metric": "f1_macro",
+  "refit_data": "shared train only; validation preserved",
+  "cv_jobs": 3,
+  "native_threads_per_worker": 1,
+  "svm_dual": false,
+  "svm_tol": 0.0001,
+  "svm_max_iter": 10000,
+  "feature_config": {
+    "schema": "hog4_rgbhist32_v1",
+    "image_shape": [
+      32,
+      32,
+      3
+    ],
+    "hog": {
+      "orientations": 9,
+      "pixels_per_cell": [
+        4,
+        4
+      ],
+      "cells_per_block": [
+        2,
+        2
+      ],
+      "block_norm": "L2-Hys",
+      "channel_axis": -1
+    },
+    "color": {
+      "bins_per_rgb_channel": 32,
+      "normalization": "each channel sums to 1"
+    },
+    "hog_features": 1764,
+    "total_features": 1860
+  },
+  "split_sha256": "216ad3cdfb623529184af4f0b4a75f61aba083f36385cd878c506981eb152259",
+  "dataset_sha256": "121341808cccdf73ba0ef2ddb9ee520d4aa5768405ac6284e5d5b0cff46ca2e4",
+  "sizes": {
+    "train": 45000,
+    "validation": 5000,
+    "test": 10000
+  },
+  "python": "3.10.16 | packaged by Anaconda, Inc. | (main, Dec 11 2024, 16:19:12) [MSC v.1929 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "logical_cpus": 16,
+  "total_ram_gb": 31.650959014892578,
+  "device": "CPU",
+  "gpu_used": false,
+  "packages": {
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "scikit-learn": "1.7.2",
+    "scikit-image": "0.25.2",
+    "joblib": "1.6.0",
+    "matplotlib": "3.10.9",
+    "psutil": "7.2.2",
+    "threadpoolctl": "3.8.0"
+  }
+}

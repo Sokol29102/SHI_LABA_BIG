@@ -1,0 +1,3 @@
+﻿model,device,test_macro_f1,test_accuracy,seed_test_std,training_seconds,training_scope,model_bytes,end_to_end_ms_per_image
+HOG+RGB+LinearSVC,CPU,0.5671615159020684,0.5745,,133.07595038414001,single final refit; CV search reported separately,186965,0.5406582031284302
+ResNet18_CIFAR_from_scratch,RTX 5060 Ti GPU,0.9384718591769348,0.9384333333333332,0.0021709452078590417,413.09736696666613,"mean per seed, 60 epochs including validation and checkpoint I/O",44776523,0.0946574869781595

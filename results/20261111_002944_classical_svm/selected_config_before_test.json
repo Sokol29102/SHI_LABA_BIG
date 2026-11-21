@@ -1,0 +1,13 @@
+{
+  "C": 0.001,
+  "use_color": true,
+  "cv_f1_macro_mean": 0.562277632361849,
+  "cv_f1_macro_std": 0.0031010876300625718,
+  "cv_train_f1_macro_mean": 0.6647432656146764,
+  "cv_accuracy_mean": 0.5697333333333333,
+  "mean_fit_seconds": 130.63798594474792,
+  "std_fit_seconds": 2.171752596290753,
+  "fold_0_f1_macro": 0.5582857396846864,
+  "fold_1_f1_macro": 0.562700775033566,
+  "fold_2_f1_macro": 0.5658463823672948
+}

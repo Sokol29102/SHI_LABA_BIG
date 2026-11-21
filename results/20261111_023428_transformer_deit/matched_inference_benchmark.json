@@ -1,0 +1,63 @@
+{
+  "svm": {
+    "device": "CPU, 1 native thread",
+    "batch_size": 512,
+    "repetitions": 5,
+    "end_to_end_seconds": [
+      0.2568917999997211,
+      0.2519155999980285,
+      0.2501081000009435,
+      0.24937499999941792,
+      0.2503011000007973
+    ],
+    "end_to_end_median_ms_per_image": 0.48886933593905724,
+    "scope": "CPU raw uint8 NHWC input; HOG/RGB, selection/scaling/SVM and labels; excludes file decode."
+  },
+  "cnn": {
+    "device": "RTX 5060 Ti GPU",
+    "precision": "strict FP32, TF32 off",
+    "batch_size": 512,
+    "repetitions": 5,
+    "model_only_seconds": [
+      0.11860929999966174,
+      0.11924479999652249,
+      0.11785669999881065,
+      0.11683419999826583,
+      0.1163211000020965
+    ],
+    "end_to_end_seconds": [
+      0.1183353000014904,
+      0.11820179999995162,
+      0.11918549999973038,
+      0.11840060000031372,
+      0.11820040000020526
+    ],
+    "model_only_median_ms_per_image": 0.23018886718517706,
+    "end_to_end_median_ms_per_image": 0.23112363281541093,
+    "scope": "CPU raw uint8 NCHW input; transfer, model-specific resize/normalization, model, argmax, CPU labels; excludes file decode. Model-only starts normalized on GPU."
+  },
+  "transformer": {
+    "device": "RTX 5060 Ti GPU",
+    "precision": "strict FP32, TF32 off",
+    "batch_size": 512,
+    "repetitions": 5,
+    "model_only_seconds": [
+      0.20162469999922905,
+      0.20114430000103312,
+      0.2022372000028554,
+      0.20282269999734126,
+      0.20188749999942956
+    ],
+    "end_to_end_seconds": [
+      0.21765339999910793,
+      0.21958140000060666,
+      0.2169462999991083,
+      0.21751909999875352,
+      0.21753660000103991
+    ],
+    "model_only_median_ms_per_image": 0.39431152343638587,
+    "end_to_end_median_ms_per_image": 0.4248761718770311,
+    "scope": "CPU raw uint8 NCHW input; transfer, model-specific resize/normalization, model, argmax, CPU labels; excludes file decode. Model-only starts normalized on GPU."
+  },
+  "scope": "Same first 512 test images, warmup, 5 timed repeats. Fixed seed42 for both neural architectures. Strict FP32 and TF32 disabled for both neural timing; recorded CNN quality used its original TF32-allowed evaluation."
+}

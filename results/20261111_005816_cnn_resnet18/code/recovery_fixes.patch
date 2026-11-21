@@ -1,0 +1,98 @@
+--- actual_run/train_cnn.py
++++ current_root/train_cnn.py
+@@ -107,6 +107,26 @@
+     return float(loss_sum.item()/len(indices)), float(correct.item()/len(indices))
+ 
+ 
++def recover_best(last, path):
++    """The atomically committed last checkpoint owns the authoritative best state."""
++    if 'best_checkpoint' in last:
++        best = last['best_checkpoint']
++        save_checkpoint(path, best)
++        return best
++    # Support old-format checkpoints only when their exported best is consistent.
++    best = torch.load(path, map_location='cpu', weights_only=True)
++    expected = max(last['history'], key=lambda row: row['validation_f1_macro'])
++    if best['epoch'] != expected['epoch'] or best['validation_f1_macro'] != expected['validation_f1_macro']:
++        raise RuntimeError('Legacy best/last checkpoints disagree; refusing an unsafe resume.')
++    return best
++
++
++def merge_resource_peaks(previous, current):
++    return {**{key: max(previous.get(key, 0.), current.get(key, 0.))
++               for key in ['rss_mib', 'allocated_mib', 'reserved_mib']},
++            'complete': previous.get('complete', False) and current.get('complete', False)}
++
++
+ def train_seed(directory, config, raw, labels, train_idx, val_idx, log):
+     seed = config['seed']
+     target = directory / f'seed_{seed}'
+@@ -117,6 +137,8 @@
+                                 weight_decay=5e-4, nesterov=True)
+     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config['epochs'])
+     best, history, start_epoch, previous_elapsed = -1., [], 1, 0.
++    best_checkpoint = None
++    previous_peaks = {'rss_mib': 0., 'allocated_mib': 0., 'reserved_mib': 0., 'complete': True}
+     last_path = target / 'last.pt'
+     if last_path.exists():
+         checkpoint = torch.load(last_path, map_location='cpu', weights_only=True)
+@@ -127,6 +149,8 @@
+         scheduler.load_state_dict(checkpoint['scheduler_state'])
+         best, history = checkpoint['best_validation_f1'], checkpoint['history']
+         start_epoch, previous_elapsed = checkpoint['epoch']+1, checkpoint['training_seconds']
++        best_checkpoint = recover_best(checkpoint, target/'best.pt')
++        previous_peaks = checkpoint.get('resource_peaks', {'complete': False})
+         torch.set_rng_state(checkpoint['torch_rng_state'])
+         torch.cuda.set_rng_state(checkpoint['cuda_rng_state'])
+         log(f'Resuming seed {seed}, epoch {start_epoch}')
+@@ -156,25 +180,37 @@
+                         'config': config, 'validation_f1_macro': val_f1}
+             if val_f1 > best:
+                 best = val_f1
+-                save_checkpoint(target / 'best.pt', {**metadata, 'model_state': model.state_dict()})
++                best_checkpoint = {**metadata, 'model_state': {
++                    key: value.detach().cpu().clone() for key, value in model.state_dict().items()}}
++                save_checkpoint(target / 'best.pt', best_checkpoint)
++            peaks = merge_resource_peaks(previous_peaks, {
++                'rss_mib': memory.peak/2**20,
++                'allocated_mib': torch.cuda.max_memory_allocated()/2**20,
++                'reserved_mib': torch.cuda.max_memory_reserved()/2**20, 'complete': True})
+             save_checkpoint(last_path, {**metadata, 'model_state': model.state_dict(),
+                 'optimizer_state': optimizer.state_dict(), 'scheduler_state': scheduler.state_dict(),
+                 'best_validation_f1': best, 'history': history,
++                'best_checkpoint': best_checkpoint, 'resource_peaks': peaks,
+                 'torch_rng_state': torch.get_rng_state(), 'cuda_rng_state': torch.cuda.get_rng_state(),
+                 'training_seconds': previous_elapsed+time.perf_counter()-started})
+             write_csv(target / 'history.csv', history)
+             log(f'seed={seed} epoch={epoch}/{config["epochs"]} train_loss={train_loss:.4f} '
+                 f'val_acc={record["validation_accuracy"]:.4f} val_F1={val_f1:.4f} train_s={train_seconds:.2f}')
+     torch.cuda.synchronize()
++    peaks = merge_resource_peaks(previous_peaks, {
++        'rss_mib': memory.peak/2**20, 'allocated_mib': torch.cuda.max_memory_allocated()/2**20,
++        'reserved_mib': torch.cuda.max_memory_reserved()/2**20, 'complete': True})
+     resources = {'training_wall_seconds': previous_elapsed+time.perf_counter()-started,
+                  'train_epoch_seconds_sum': sum(r['train_seconds'] for r in history),
+-                 'sampled_peak_process_tree_rss_mib': memory.peak/2**20,
+-                 'peak_cuda_allocated_mib': torch.cuda.max_memory_allocated()/2**20,
+-                 'peak_cuda_reserved_mib': torch.cuda.max_memory_reserved()/2**20,
++                 'sampled_peak_process_tree_rss_mib': peaks['rss_mib'],
++                 'peak_cuda_allocated_mib': peaks['allocated_mib'],
++                 'peak_cuda_reserved_mib': peaks['reserved_mib'],
++                 'peak_measurement_complete': peaks['complete'],
+                  'parameters_total': sum(p.numel() for p in model.parameters()),
+                  'parameters_trainable': sum(p.numel() for p in model.parameters() if p.requires_grad),
+                  'best_validation_f1': best, 'checkpoint_bytes': (target/'best.pt').stat().st_size,
+-                 'note': 'Training wall includes validation and checkpoint I/O. VRAM includes resident official-train images; RAM is sampled tree RSS and may overcount shared pages.'}
++                 'note': ('' if peaks['complete'] else 'Incomplete legacy-resume peak history: memory values are lower bounds. ')
++                         + 'Training wall includes validation and checkpoint I/O. VRAM includes resident official-train images; RAM is sampled tree RSS and may overcount shared pages.'}
+     save_json(target / 'training_resources.json', resources)
+     del model, optimizer, scheduler
+     gc.collect()
+@@ -326,6 +362,7 @@
+                 log(f'Starting seed {seed}: {config["epochs"]} epochs, {len(train_indices)} train images.')
+                 resources[seed] = train_seed(directory, {**config, 'seed': seed}, raw, y, train_idx, val_idx, log)
+             last = torch.load(directory/f'seed_{seed}'/'last.pt', map_location='cpu', weights_only=True)
++            recover_best(last, directory/f'seed_{seed}'/'best.pt')
+             save_json(directory/f'seed_{seed}'/'history.json', last['history'])
+             del last
+         selections = {str(seed): {'checkpoint_sha256': file_hash(directory/f'seed_{seed}'/'best.pt'),

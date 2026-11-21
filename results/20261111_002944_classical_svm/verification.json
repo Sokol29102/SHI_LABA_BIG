@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "verified_test_predictions": 10000,
+  "fresh_raw_image_predictions_checked": 64,
+  "split_leakage": false,
+  "cv_folds_validated": 3,
+  "test_accuracy": 0.5745,
+  "test_macro_f1": 0.5671615159020684,
+  "example_cli_expected_prediction": "dog",
+  "model_sha256": "e544c9d921da44fd078cc61f4c35fa50a9b927034ab0f17ee5cef370725b50c1"
+}

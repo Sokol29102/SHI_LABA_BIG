@@ -1,0 +1,13 @@
+{
+  "training_wall_seconds": 303.0362591000012,
+  "train_epoch_seconds_sum": 280.92818000000625,
+  "sampled_peak_process_tree_rss_mib": 2120.21484375,
+  "peak_cuda_allocated_mib": 2440.7392578125,
+  "peak_cuda_reserved_mib": 2702.0,
+  "peak_measurement_complete": true,
+  "parameters_total": 5526346,
+  "parameters_trainable": 5526346,
+  "best_validation_f1": 0.9736228847502266,
+  "checkpoint_bytes": 22153231,
+  "scope": "Local fine-tuning incl validation/checkpoint I/O; excludes original ImageNet pretraining. Peak VRAM includes resident train images. Tree RSS sampled 100ms may overcount shared pages."
+}

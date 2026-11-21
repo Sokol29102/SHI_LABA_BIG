@@ -1,0 +1,62 @@
+{
+  "architecture": "resnet18_cifar_v1",
+  "weights": null,
+  "seeds": [
+    42,
+    123,
+    2026
+  ],
+  "epochs": 60,
+  "batch_size": 256,
+  "learning_rate": 0.1,
+  "optimizer": "SGD Nesterov",
+  "momentum": 0.9,
+  "weight_decay": 0.0005,
+  "scheduler": "CosineAnnealingLR",
+  "training_precision": "BF16 autocast, FP32 weights",
+  "evaluation_precision": "FP32",
+  "checkpoint_selection": "highest validation macro-F1, earliest epoch on tie",
+  "mean": [
+    0.4911373512391725,
+    0.4821111870234561,
+    0.4464489876090037
+  ],
+  "std": [
+    0.24686913619550443,
+    0.2434301261263106,
+    0.2616033939153383
+  ],
+  "classes": [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+  ],
+  "dataset_sha256": "121341808cccdf73ba0ef2ddb9ee520d4aa5768405ac6284e5d5b0cff46ca2e4",
+  "split_sha256": "216ad3cdfb623529184af4f0b4a75f61aba083f36385cd878c506981eb152259",
+  "sizes": {
+    "train": 45000,
+    "validation": 5000,
+    "test": 10000
+  },
+  "gpu": "NVIDIA GeForce RTX 5060 Ti",
+  "gpu_memory_bytes": 17102864384,
+  "cudnn_benchmark": true,
+  "tf32": true,
+  "strict_bitwise_determinism": false,
+  "preprocessing": "Train-only RGB population statistics; per-image random reflect-padded 4-pixel crop and 0.5 horizontal flip during training. Eval normalization only.",
+  "data_pipeline": "Resident uint8 official-train image tensor; GPU augmentation; no DataLoader workers",
+  "python": "3.10.16 | packaged by Anaconda, Inc. | (main, Dec 11 2024, 16:19:12) [MSC v.1929 64 bit (AMD64)]",
+  "packages": {
+    "torch": "2.11.0+cu128",
+    "torchvision": "0.26.0+cu128",
+    "numpy": "2.2.6",
+    "scikit-learn": "1.7.2"
+  }
+}

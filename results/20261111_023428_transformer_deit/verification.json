@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "exact_predictions_verified": 30000,
+  "seeds": [
+    {
+      "seed": 42,
+      "best_epoch": 9,
+      "exact_predictions_verified": 10000,
+      "test_accuracy": 0.9716,
+      "test_macro_f1": 0.9716092060556141
+    },
+    {
+      "seed": 123,
+      "best_epoch": 10,
+      "exact_predictions_verified": 10000,
+      "test_accuracy": 0.9722,
+      "test_macro_f1": 0.9721936166051707
+    },
+    {
+      "seed": 2026,
+      "best_epoch": 9,
+      "exact_predictions_verified": 10000,
+      "test_accuracy": 0.9705,
+      "test_macro_f1": 0.9704913873353493
+    }
+  ],
+  "checkpoint_selection_and_hashes_verified": true,
+  "recorded_metrics_and_aggregates_verified": true,
+  "evaluation": "strict FP32, same GPU/software/batch policy",
+  "example_prediction_seed42": "cat"
+}

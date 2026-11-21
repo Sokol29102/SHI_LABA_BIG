@@ -1,0 +1,56 @@
+{
+  "status": "passed",
+  "per_seed": [
+    {
+      "seed": 42,
+      "test_predictions_verified": 10000,
+      "best_epoch": 60,
+      "test_accuracy": 0.938,
+      "test_macro_f1": 0.9380579220264668,
+      "exact_reload_matches": 10000,
+      "near_tie_changes": [],
+      "fresh_reload_accuracy": 0.938,
+      "fresh_reload_macro_f1": 0.9380579220264668
+    },
+    {
+      "seed": 123,
+      "test_predictions_verified": 10000,
+      "best_epoch": 59,
+      "test_accuracy": 0.9361,
+      "test_macro_f1": 0.9360442506191384,
+      "exact_reload_matches": 9999,
+      "near_tie_changes": [
+        {
+          "position": 3828,
+          "saved_label": 9,
+          "fresh_label": 0,
+          "top_labels": [
+            0,
+            9
+          ],
+          "logit_gap": 0.00010347366333007812
+        }
+      ],
+      "fresh_reload_accuracy": 0.9361,
+      "fresh_reload_macro_f1": 0.9360452697074535
+    },
+    {
+      "seed": 2026,
+      "test_predictions_verified": 10000,
+      "best_epoch": 58,
+      "test_accuracy": 0.9412,
+      "test_macro_f1": 0.941313404885199,
+      "exact_reload_matches": 10000,
+      "near_tie_changes": [],
+      "fresh_reload_accuracy": 0.9412,
+      "fresh_reload_macro_f1": 0.941313404885199
+    }
+  ],
+  "total_test_predictions_verified": 30000,
+  "checkpoint_selection_verified": "each earliest maximum validation-F1 epoch",
+  "seed42_example_prediction": "cat",
+  "aggregate_mean_std_verified": true,
+  "immutable_split_hash_verified": true,
+  "near_tie_logit_gap_tolerance": 0.001,
+  "reload_guarantee": "Exact checkpoint/data hashes and recorded-metric recomputation. Fresh GPU labels must match or differ only between top two logits with gap <=0.001; every exception is listed. Not a bitwise-identical GPU guarantee."
+}
